@@ -55,3 +55,14 @@ class Ec2Servers:
             )
         except Exception as e:
             return e
+
+    def status(self):
+        try:
+            return self.ec2.describe_instance_status(
+                InstanceIds=[
+                    self.instance_dict.get("id")
+                ],
+                DryRun=False,
+            )
+        except Exception as e:
+            return e

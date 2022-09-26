@@ -17,6 +17,7 @@ def start_help(message):
 you can use one of the commands below:
 /start - get help
 /help - get help
+/status_ec2
 /restart_ec2
 /stop_ec2
 /start_ec2
@@ -104,6 +105,35 @@ def confirm_start_ec2(message):
         configurations.get("ec2").get(instance_name)
     ).start()
     bot.reply_to(message, "Done !! %s" % (r))
+
+
+# ........................   INSTANCES STATUS ........................
+
+@bot.message_handler(commands=['status_ec2'])
+def status_ec2(message):
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+
+    buttons = [
+        "/confirm_status_ec2 %s" % (item)
+        for item in configurations.get("ec2").keys()
+    ]
+
+    for i in buttons:
+        itembtna = types.KeyboardButton(i)
+        markup.row(itembtna)
+
+    bot.send_message(TELEGRAM_CHAT_ID, "Choose one:", reply_markup=markup)
+
+
+@bot.message_handler(commands=['confirm_status_ec2'])
+def confirm_status_ec2(message):
+    command, instance_name = message.text.rsplit(" ", 1)
+    r = Ec2Servers(
+        configurations.get("ec2").get(instance_name)
+    ).status()
+    bot.reply_to(message, "Done !! %s" % (r))
+
+# ........................   ECHO ALL ........................
 
 
 @bot.message_handler(func=lambda m: True)
