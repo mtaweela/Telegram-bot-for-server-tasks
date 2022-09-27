@@ -11,7 +11,18 @@ TELEGRAM_CHAT_ID = config("TELEGRAM_CHAT_ID")
 bot = telebot.TeleBot(TELEGRAM_TOKEN, parse_mode=None)
 
 
+def auth_middleware_handler(handler):
+    def decorator(message):
+        if str(message.chat.id) == TELEGRAM_CHAT_ID:
+            return handler(message)
+
+        bot.reply_to(message, "stop playing !!")
+
+    return decorator
+
+
 @bot.message_handler(commands=['start', 'help'])
+@auth_middleware_handler
 def start_help(message):
     bot.send_message(message.chat.id, """
 you can use one of the commands below:
@@ -29,6 +40,7 @@ you can use one of the commands below:
 
 
 @bot.message_handler(commands=['restart_ec2'])
+@auth_middleware_handler
 def restart_ec2(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
 
@@ -45,6 +57,7 @@ def restart_ec2(message):
 
 
 @bot.message_handler(commands=['confirm_restart_ec2'])
+@auth_middleware_handler
 def confirm_restart_ec2(message):
     command, instance_name = message.text.rsplit(" ", 1)
     r = Ec2Servers(
@@ -56,6 +69,7 @@ def confirm_restart_ec2(message):
 
 
 @bot.message_handler(commands=['stop_ec2'])
+@auth_middleware_handler
 def stop_ec2(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
 
@@ -72,6 +86,7 @@ def stop_ec2(message):
 
 
 @bot.message_handler(commands=['confirm_stop_ec2'])
+@auth_middleware_handler
 def confirm_stop_ec2(message):
     command, instance_name = message.text.rsplit(" ", 1)
     r = Ec2Servers(
@@ -83,6 +98,7 @@ def confirm_stop_ec2(message):
 # ........................   START INSTANCES ........................
 
 @bot.message_handler(commands=['start_ec2'])
+@auth_middleware_handler
 def start_ec2(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
 
@@ -99,6 +115,7 @@ def start_ec2(message):
 
 
 @bot.message_handler(commands=['confirm_start_ec2'])
+@auth_middleware_handler
 def confirm_start_ec2(message):
     command, instance_name = message.text.rsplit(" ", 1)
     r = Ec2Servers(
@@ -110,6 +127,7 @@ def confirm_start_ec2(message):
 # ........................   INSTANCES STATUS ........................
 
 @bot.message_handler(commands=['status_ec2'])
+@auth_middleware_handler
 def status_ec2(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
 
@@ -126,6 +144,7 @@ def status_ec2(message):
 
 
 @bot.message_handler(commands=['confirm_status_ec2'])
+@auth_middleware_handler
 def confirm_status_ec2(message):
     command, instance_name = message.text.rsplit(" ", 1)
     r = Ec2Servers(
@@ -137,8 +156,9 @@ def confirm_status_ec2(message):
 
 
 @bot.message_handler(func=lambda m: True)
+@auth_middleware_handler
 def echo_all(message):
-    bot.send_message(TELEGRAM_CHAT_ID, "message ..")
+    bot.reply_to(message, "Hello, do /start")
 
 
 bot.infinity_polling()
